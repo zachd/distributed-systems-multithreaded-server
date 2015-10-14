@@ -10,4 +10,4 @@ Creates a server that uses smart thread pooling to respond to client requests.
     >python client.py {port_num} HELO {message} \\n
 
 ## Kill server
-    >python client.py KILL_SERVICE\\n
+    >python client.py {port_num} KILL_SERVICE\\n

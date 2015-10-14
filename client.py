@@ -14,11 +14,14 @@ else:
 
 for i in range(1000):
     print "Sending #" + str(i) + ": \"" + data + "\""
+
     # connect to socket
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect(("localhost", int(sys.argv[1]))) 
+
     # send data
     s.sendall(data)
+    
     # print received response
     received = s.recv(1024)
     print "Received: {}".format(received)

@@ -67,7 +67,7 @@ s.bind(("0.0.0.0", int(sys.argv[1])))
 s.listen(1)
 
 # create initial workers
-for i in range(min_threads): 
+for _ in range(min_threads): 
     Worker(clients)
 
 # continuous loop to keep accepting requests
@@ -82,7 +82,7 @@ while 1:
     # check if queue size is num_threads and (num_threads - margin)
     if qsize >= (num_threads - queue_margin):
         # add queue_margin amount of new workers
-        for i in range(queue_margin): 
+        for _ in range(queue_margin): 
             if num_threads == max_threads:
                 break
             Worker(clients)
@@ -93,7 +93,7 @@ while 1:
     # else check if queue size is between 0 and margin
     elif qsize <= queue_margin:
         # remove queue_margin amount of workers
-        for i in range(queue_margin): 
+        for _ in range(queue_margin): 
             if num_threads == min_threads:
                 break
             clients.put((None, None))
