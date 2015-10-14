@@ -2,6 +2,7 @@ import sys
 import socket
 import re
 from Queue import Queue
+import thread
 from threading import Thread
 
 # from http://code.activestate.com/recipes/577187-python-thread-pool/
@@ -22,19 +23,24 @@ class Worker(Thread):
             (conn, data) = self.clients.get()
             # check if connection or kill request
             if conn:
-                ip, port = conn.getpeername()
-                match = re.match("HELO (.*)\n", data)
-                # check if kill command or helo message
-                if data == "KILL_SERVICE\n":
-                    self.interrupt_main()
-                elif match is not None:
-                    conn.sendall("HELO " + match.groups()[0] + "\nIP:" + ip + "\nPort:" + str(port) + "\nStudentID:\n")
-                # close connection
-                conn.close()
+                process_req(conn, data)
+
             else:
                 break;
             # set task as done in queue
             self.clients.task_done()
+
+# function to process a client request
+def process_req(conn, data):
+    ip, port = conn.getpeername()
+    match = re.match("HELO (.*)\\\\n", data)
+    # check if kill command or helo message
+    if data == "KILL_SERVICE\\n":
+        thread.interrupt_main()
+    elif match is not None:
+        conn.sendall("HELO " + match.groups()[0] + "\nIP:" + ip + "\nPort:" + str(port) + "\nStudentID:\n")
+    # close connection
+    conn.close()
 
 if len(sys.argv) != 2 or not sys.argv[1].isdigit():
     sys.exit("Port number required")
