@@ -22,21 +22,21 @@ class Worker(Thread):
             if conn:
                 process_req(self.thread_id, conn, data, self.clients);
             else:
-                print "[" + str(self.thread_id) + "] goodbye cruel world!"
                 break;
             # set task as done in queue
             self.clients.task_done()
 
 # function to process a client request
 def process_req(thread_id, conn, data, clients):
-    sleep(1)
+    sleep(0.5)
     ip, port = conn.getpeername()
-    print "[" + str(thread_id) + "] returning" + ip + ":" + str(port)
-    print "[" + str(thread_id) + "] queue:" + str(clients.qsize())
     # return data to client
     conn.sendall(data)
     # close connection
     conn.close()
+
+if len(sys.argv) != 2 or not sys.argv[1].isdigit():
+    sys.exit("Port number required")
 
 # create socket
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -49,14 +49,14 @@ min_threads = 5
 # thread counter
 num_threads = min_threads
 
-# queue threshold to increase or decrease
+# queue threshold to increase or decrease num workers
 queue_threshold = 30
 
 # queue object to store requests
 clients = Queue()
 
 # bind to port and listen for connections
-s.bind(("localhost", 61234)) 
+s.bind(("0.0.0.0", int(sys.argv[1]))) 
 s.listen(1)
 
 # create initial workers
@@ -68,12 +68,10 @@ while 1:
     # accept a connection request
     conn, addr = s.accept()
     qsize = clients.qsize()
-    print "checking (" + str(qsize) + ")"
     queue_margin = (num_threads * queue_threshold / 100)
 
-    # check if queue size is between margin and num_threads
+    # check if queue size is num_threads and (num_threads - margin)
     if qsize >= (num_threads - queue_margin):
-        print "[MAX] queue is now " + str(qsize) + " out of " + str(num_threads)
         # add queue_margin amount of new workers
         for i in range(queue_margin): 
             if num_threads == max_threads:
@@ -83,9 +81,9 @@ while 1:
         # print to console that we're bumping the size
         if num_threads != max_threads:
             print "[MAX] bumping queue size! by " + str(queue_margin) + " to " + str(num_threads)
-    # check if queue size is between 0 and margin
+
+    # else check if queue size is between 0 and margin
     elif qsize <= queue_margin:
-        print "[MIN] queue is now " + str(qsize) + " out of " + str(num_threads)
         # remove queue_margin amount of workers
         for i in range(queue_margin): 
             if num_threads == min_threads:
@@ -97,5 +95,5 @@ while 1:
             print "[MIN] decreasing queue size! by " + str(queue_margin) + " to " + str(num_threads)
 
     # receive data and put request in queue
-    data = conn.recv(1024)
+    data = conn.recv(2048)
     clients.put((conn, data))
