@@ -5,7 +5,7 @@ from Queue import Queue
 import thread
 from threading import Thread
 
-# from http://code.activestate.com/recipes/577187-python-thread-pool/
+# Worker class from http://code.activestate.com/recipes/577187-python-thread-pool/
 class Worker(Thread):
     """Thread executing tasks from a given tasks queue"""
     def __init__(self, clients):
@@ -24,7 +24,6 @@ class Worker(Thread):
             # check if connection or kill request
             if conn:
                 process_req(conn, data)
-
             else:
                 break;
             # set task as done in queue
@@ -38,7 +37,7 @@ def process_req(conn, data):
     if data == "KILL_SERVICE\\n":
         thread.interrupt_main()
     elif match is not None:
-        conn.sendall("HELO " + match.groups()[0] + "\nIP:" + ip + "\nPort:" + str(port) + "\nStudentID:\n")
+        conn.sendall("HELO " + match.groups()[0] + "\nIP:" + ip + "\nPort:" + str(port) + "\nStudentID:f01f3533cd97ebd24e7c1b49639a2c3c2fd904c9e6a105226ecde32db16d0b10\n")
     # close connection
     conn.close()
 
