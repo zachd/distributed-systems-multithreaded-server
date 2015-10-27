@@ -31,8 +31,9 @@ class Worker(Thread):
 
 # function to process a client request
 def process_req(conn, data):
-    ip, port = conn.getpeername()
-    match = re.match("HELO (.*)\\\\n", data)
+    ip, port = conn.getsockname()
+    print "\"" + data + "\""
+    match = re.match("HELO (.*)\\n", data)
     # check if kill command or helo message
     if data == "KILL_SERVICE\\n":
         thread.interrupt_main()
@@ -61,8 +62,13 @@ queue_threshold = 30
 # queue object to store requests
 clients = Queue()
 
+# current ip (http://stackoverflow.com/a/9481595)
+from urllib2 import urlopen
+my_ip = urlopen('http://ip.42.pl/raw').read()
+
 # bind to port and listen for connections
-s.bind(("0.0.0.0", int(sys.argv[1]))) 
+s.bind((my_ip, int(sys.argv[1]))) 
+print "[start] binding to " + my_ip + ":" + sys.argv[1]
 s.listen(1)
 
 # create initial workers
